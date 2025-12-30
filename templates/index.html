@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Product Recommendation System</title>
+</head>
+<body>
+    <h2>Product Recommendation System</h2>
+
+    <form method="GET" action="/predict">
+        <label>Enter Username:</label>
+        <input type="text" name="username" required>
+        <button type="submit">Submit</button>
+    </form>
+
+    {% if message %}
+    <p style="color:red; font-weight:bold;">
+        {{ message }}
+    </p>
+{% endif %}
+
+    {% if column_names and row_data %}
+<h3>Recommended Products</h3>
+
+<table border="1">
+    <thead>
+        <tr>
+            {% for col in column_names %}
+                <th>{{ col }}</th>
+            {% endfor %}
+        </tr>
+    </thead>
+
+    <tbody>
+        {% for row in row_data %}
+            <tr>
+                {% for col, cell in zip(column_names, row) %}
+                    <td>{{ cell }}</td>
+                {% endfor %}
+            </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% endif %}
+
+
+</body>
+</html>
