@@ -1,9 +1,19 @@
 #!/usr/bin/env python
 # coding: utf-8
 
-# ###### Ran from jupyter notebook
-# //from google.colab import drive
-# //drive.mount('/content/gdrive')
+# 
+# 
+# GIT HUB Link to Access Project setup.
+# https://github.com/MamathaNaveen/Sentiment_Based_Product_Recommendation_System_MamathaK
+# 
+# RENDER Deployed project
+# https://dashboard.render.com/web/srv-d59rf515pdvs73aikc9g
+# 
+# Website hosted on Render:
+# https://sentiment-based-product-recommendation-gvt0.onrender.com/
+# 
+# ScreenShots of Output for Reference is added in "Output_Screenshots_From_Render_MamathaK.pdf"
+# 
 # 
 
 # # **Problem Statment**
@@ -70,7 +80,7 @@ from xgboost import XGBClassifier
 
 # ### **Data Extraction**
 
-# In[4]:
+# In[3]:
 
 
 master_df=pd.read_csv("dataset/sample30.csv")
@@ -78,25 +88,25 @@ df_class=master_df.copy()
 df_rec=master_df.copy()
 
 
-# In[5]:
+# In[4]:
 
 
 pd.set_option('display.max_columns',200)
 
 
-# In[6]:
+# In[5]:
 
 
 df_class.head()
 
 
-# In[7]:
+# In[6]:
 
 
 df_class.info()
 
 
-# In[8]:
+# In[7]:
 
 
 ##Dropping reviews_userCity and reviews_userProvince
@@ -105,14 +115,14 @@ df_class.drop(['reviews_userCity','reviews_userProvince','reviews_date'],axis=1,
 
 # ### **Exploratory Data Analysis AND Data Cleaning**
 
-# In[9]:
+# In[8]:
 
 
 print("Sentiment Count")
 df_class.user_sentiment.value_counts()
 
 
-# In[10]:
+# In[9]:
 
 
 df_class.reviews_didPurchase.value_counts()
@@ -121,46 +131,46 @@ df_class['reviews_didPurchase'].fillna('No Data', inplace=True)
 df_class.reviews_didPurchase.value_counts()
 
 
-# In[11]:
+# In[10]:
 
 
 df_class.reviews_doRecommend.value_counts()
 
 
-# In[12]:
+# In[11]:
 
 
 ##No Unique Users
 df_class.reviews_username.nunique()
 
 
-# In[13]:
+# In[12]:
 
 
 df_class.reviews_rating.value_counts()
 
 
-# In[14]:
+# In[13]:
 
 
 ## No null values
 df_class.reviews_text.info(verbose=True)
 
 
-# In[15]:
+# In[14]:
 
 
 ## removing reviews with no username for genuine reviews
 df_class.dropna(subset=['reviews_username'],inplace=True)
 
 
-# In[16]:
+# In[15]:
 
 
 df_class.info(verbose=True)
 
 
-# In[17]:
+# In[16]:
 
 
 ## Final Data review
@@ -172,7 +182,7 @@ print('\nmissing vlues: ', df_class.isnull().values.sum())
 print('\nUnique values: \n', df_class.nunique())
 
 
-# In[18]:
+# In[17]:
 
 
 #sns.barplot(df_class.user_sentiment.value_counts())
@@ -183,14 +193,14 @@ sns.countplot(x='user_sentiment', data= df_class, palette="Set2")
 
 # ***** Rating wise also highest positive rating seen by customers another indication that products are been well received
 
-# In[19]:
+# In[18]:
 
 
 df_class.columns
 #df_class.reviews_didPurchase.value_counts()
 
 
-# In[20]:
+# In[19]:
 
 
 sns.countplot(x='reviews_rating',data=df_class,palette='Set2')
@@ -202,14 +212,14 @@ plt.show()
 # ###### Analysis from above graphs:
 # Since reviews_didPurchase count is very low, hence i will consider reviews of other columns as well who have not purchased products for recommendation. In future when the review_didPurchase count gets increased to reasonable sum i will ignore reviews from users who have not purchased the product.
 
-# In[21]:
+# In[20]:
 
 
 sns.histplot(data=df_class,x='reviews_rating',hue='reviews_didPurchase'),plt.show()
 sns.histplot(data=df_class,x='reviews_rating',hue='user_sentiment',palette='Set2'),plt.show()
 
 
-# In[22]:
+# In[21]:
 
 
 print("Count of rating greater than 3: ", df_class[df_class['reviews_rating'] > 3].reviews_rating.count())
@@ -223,13 +233,13 @@ print("Rating greater than 3 is considered positive review")
 # ###### In the next stages i will use NLP to lemmatize 'reviews_text' column to get hidden emotion from users on product reviews and combine it with rating
 # Weight Sum ((0.x)*Combine Rating + (1-0.x)*Text Sentiment to generate final sentiment score for analysis.
 
-# In[23]:
+# In[22]:
 
 
 df_class.reviews_text.info()
 
 
-# In[24]:
+# In[23]:
 
 
 ## Convert object to string type
@@ -237,7 +247,7 @@ df_class['reviews_text']=df_class['reviews_text'].astype(str)
 type(df_class['reviews_text'].iloc[0])
 
 
-# In[25]:
+# In[24]:
 
 
 df_class.isna().sum()
@@ -245,13 +255,13 @@ df_class.isna().sum()
 
 # user_sentiment has one column with NA will remove that row!!
 
-# In[26]:
+# In[25]:
 
 
 df_class=df_class[~df_class['user_sentiment'].isna()]
 
 
-# In[27]:
+# In[26]:
 
 
 ##checking again is any NAN values present in user_sentiment and reviews_text
@@ -262,7 +272,7 @@ df_class.isna().sum()
 
 # #### **Import requried modules and remove stopwords**
 
-# In[28]:
+# In[27]:
 
 
 #Common functions for cleaning the text data
@@ -282,7 +292,7 @@ import re
 import html
 
 
-# In[29]:
+# In[28]:
 
 
 ## Combining two columns reviews_title and reviews_text for vectorizer
@@ -290,7 +300,7 @@ df_class["reviews_title"] = df_class["reviews_title"].fillna('')
 df_class['reviews_text_title']=df_class['reviews_title']+" "+df_class['reviews_text']
 
 
-# In[30]:
+# In[29]:
 
 
 # Remove special characters and converted to lower case.
@@ -316,7 +326,7 @@ df_class[['reviews_texttitle_lemmatized','reviews_text_title']].head(5)
 
 # #### **Lemmatizing Words**
 
-# In[31]:
+# In[30]:
 
 
 ### Lemmatizing words
@@ -370,7 +380,7 @@ def LemmatiseText(text):
 df_class['reviews_texttitle_lemmatized']=df_class['reviews_texttitle_lemmatized'].apply(LemmatiseText)
 
 
-# In[32]:
+# In[31]:
 
 
 df_class.head()
@@ -378,7 +388,7 @@ df_class.head()
 
 # #### **Wordnet representation**
 
-# In[33]:
+# In[32]:
 
 
 ###### Word Net representation
@@ -401,7 +411,7 @@ with open("./pickle/wordcloud.pkl", "wb") as f:
 
 # #### ** N-Gram Representation**
 
-# In[34]:
+# In[33]:
 
 
 #map categorical variable user_sentiment to 0 or 1
@@ -409,7 +419,7 @@ with open("./pickle/wordcloud.pkl", "wb") as f:
 df_class['user_sentiment'].value_counts(dropna=False)
 
 
-# In[35]:
+# In[34]:
 
 
 df_class.head()
@@ -417,7 +427,7 @@ df_class.head()
 
 # ###### Find the top unigrams,bigrams and trigrams by frequency among all the reviews by users
 
-# In[36]:
+# In[35]:
 
 
 #Write your code here to find the top 30 unigram frequency among the complaints in the cleaned dataframe(df_class).
@@ -441,7 +451,7 @@ def get_n_grams(df_clean,n,count):
 
 
 
-# In[37]:
+# In[36]:
 
 
 from plotly.offline import plot
@@ -449,20 +459,20 @@ import plotly.graph_objects as go
 import plotly.express as px
 
 
-# In[38]:
+# In[37]:
 
 
 #Print the top 10 words in the unigram frequency
 get_n_grams(df_class['reviews_texttitle_lemmatized'],1,10)
 
 
-# In[39]:
+# In[38]:
 
 
 get_n_grams(df_class['reviews_texttitle_lemmatized'],2,10)
 
 
-# In[40]:
+# In[39]:
 
 
 get_n_grams(df_class['reviews_texttitle_lemmatized'],3,10)
@@ -476,7 +486,7 @@ get_n_grams(df_class['reviews_texttitle_lemmatized'],3,10)
 
 # #### **Feature extraction using tfidf Vectorizer**
 
-# In[41]:
+# In[40]:
 
 
 df_class['user_sentiment_mapped'] = df_class['user_sentiment'].replace({
@@ -487,7 +497,7 @@ df_class['user_sentiment_mapped'] = df_class['user_sentiment'].replace({
 })
 
 
-# In[42]:
+# In[41]:
 
 
 df_class['user_sentiment_mapped'].value_counts()
@@ -501,7 +511,7 @@ df_class['user_sentiment_mapped'].value_counts()
 
 
 
-# In[43]:
+# In[42]:
 
 
 #using TF-IDF vectorizer using the parameters to get 650 features.
@@ -513,7 +523,7 @@ y= df_class['user_sentiment_mapped']
 indices=df_class.index
 
 
-# In[44]:
+# In[43]:
 
 
 print(tfidf_vectorizer.get_feature_names_out())
@@ -526,7 +536,7 @@ with open("./pickle/TfIdfVectorizer.pkl", "wb") as f:
 
 # #### **Train Test Split**
 
-# In[45]:
+# In[44]:
 
 
 # splitting into test and train
@@ -544,7 +554,7 @@ X_train, X_test, y_train, y_test, idx_train, idx_test = train_test_split(
 
 # #### **Since we are seeing class imbalance with positive reviews more, we will use SMOTE to balance the data.**
 
-# In[46]:
+# In[45]:
 
 
 from imblearn.over_sampling import SMOTE
@@ -562,7 +572,7 @@ print("After SMOTE: ",count)
 
 # #### **Logistic Classification**
 
-# In[47]:
+# In[46]:
 
 
 from sklearn.metrics import roc_curve,roc_auc_score
@@ -622,7 +632,7 @@ def build_model(X_train_res,y_train_res,X_test,y_test,modelname):
   return results
 
 
-# In[48]:
+# In[47]:
 
 
 LR = LogisticRegression()
@@ -633,14 +643,14 @@ lr_results=build_model(X_train_res,y_train_res,X_test,y_test,LR)
 
 # #### **Naive Bayes**
 
-# In[49]:
+# In[48]:
 
 
 # training the NB model and making predictions
 from sklearn.naive_bayes import MultinomialNB
 
 
-# In[50]:
+# In[49]:
 
 
 mnb = MultinomialNB(alpha=1.0)
@@ -649,45 +659,45 @@ mnb_results=build_model(X_train_res, y_train_res, X_test,y_test,mnb)
 
 # #### **Decision Tree**
 
-# In[51]:
+# In[57]:
 
 
 from sklearn.tree import DecisionTreeClassifier
 from sklearn.model_selection import GridSearchCV,RandomizedSearchCV
 
 DT = DecisionTreeClassifier()
-#DT_results=build_model(X_train_res, y_train_res, X_test,y_test,DT)
+DT_results=build_model(X_train_res, y_train_res, X_test,y_test,DT)
 
 
 # #### **Random Forest Classifier**
 
-# In[52]:
-
-
-#rc=RandomForestClassifier(oob_score=True,n_jobs=-1,random_state=42,criterion='gini')
-#params = {
-#    'max_depth': [2,3,5,10,20],
-#    'min_samples_leaf': [5,10,20,50,100,200],
-#    'n_estimators': [10,25,30,50,100,200]
-#}
-
-#grid_search=GridSearchCV(rc,param_grid=params,cv=3,n_jobs=-1,verbose=1)
-#grid_search.fit(X_train_res,y_train_res)
-
-
 # In[53]:
 
 
-#print(grid_search.best_params_)
-#print(grid_search.best_score_)
-#rc_best=grid_search.best_estimator_
-#print(rc_best)
-#RC_results=build_model(X_train_res, y_train_res, X_test,y_test,rc_best)
+rc=RandomForestClassifier(oob_score=True,n_jobs=-1,random_state=42,criterion='gini')
+params = {
+    'max_depth': [2,3,5,10,20],
+    'min_samples_leaf': [5,10,20,50,100,200],
+    'n_estimators': [10,25,30,50,100,200]
+}
+
+grid_search=GridSearchCV(rc,param_grid=params,cv=3,n_jobs=-1,verbose=1)
+grid_search.fit(X_train_res,y_train_res)
+
+
+# In[54]:
+
+
+print(grid_search.best_params_)
+print(grid_search.best_score_)
+rc_best=grid_search.best_estimator_
+print(rc_best)
+RC_results=build_model(X_train_res, y_train_res, X_test,y_test,rc_best)
 
 
 # #### **XGBoostClassifier**
 
-# In[54]:
+# In[55]:
 
 
 import xgboost as xgb
@@ -697,24 +707,24 @@ XG_results=build_model(X_train_res, y_train_res, X_test,y_test,XG)
 
 # #### **MODEL INFERENCE**
 
-# In[55]:
+# In[58]:
 
 
-#metrics_table = {
-#    'Model': ['Logistic Regression', 'Naive Bayes', 'Decision Tree', 'Random Forest', 'XGBoost'],
-#    'Accuracy': [lr_results[0], mnb_results[0],DT_results[0] ,RC_results[0], XG_results[0]],
-#    'Precision':[lr_results[1],mnb_results[1],DT_results[1] ,RC_results[1],XG_results[1]],
-#    'Recall': [lr_results[2], mnb_results[2],DT_results[2] ,RC_results[2], XG_results[2]],
-#    'F1Score': [lr_results[3], mnb_results[3],DT_results[3] ,RC_results[3], XG_results[3]],
-#    'ROC Curve': [float(lr_results[4]), float(mnb_results[4]),DT_results[4] ,float(RC_results[4]), float(XG_results[4])],
-#}
-#metrics_df = pd.DataFrame(metrics_table)
-#metrics_df
+metrics_table = {
+    'Model': ['Logistic Regression', 'Naive Bayes', 'Decision Tree', 'Random Forest', 'XGBoost'],
+    'Accuracy': [lr_results[0], mnb_results[0],DT_results[0] ,RC_results[0], XG_results[0]],
+    'Precision':[lr_results[1],mnb_results[1],DT_results[1] ,RC_results[1],XG_results[1]],
+    'Recall': [lr_results[2], mnb_results[2],DT_results[2] ,RC_results[2], XG_results[2]],
+    'F1Score': [lr_results[3], mnb_results[3],DT_results[3] ,RC_results[3], XG_results[3]],
+    'ROC Curve': [float(lr_results[4]), float(mnb_results[4]),DT_results[4] ,float(RC_results[4]), float(XG_results[4])],
+}
+metrics_df = pd.DataFrame(metrics_table)
+metrics_df
 
 
 # #### **Comparing the all the model, it is found that XGBoost better model, Saving model**
 
-# In[56]:
+# In[59]:
 
 
 import pickle
@@ -728,7 +738,7 @@ with open("./pickle/XGBBoost.pkl", "wb") as f:
 # 1. user-based recommendation systems
 # 2. item-based recommendation systems
 
-# In[57]:
+# In[60]:
 
 
 df_class.head()
@@ -736,7 +746,7 @@ df_class.head()
 
 # #### **Adding Adjusted Rating**
 
-# In[58]:
+# In[61]:
 
 
 train_sent = XG.predict_proba(X_train)[:, 1]
@@ -744,30 +754,32 @@ test_sent  = XG.predict_proba(X_test)[:, 1]
 X_train.shape
 
 
-# In[59]:
+# In[62]:
 
 
 idx_train.shape
 idx_test.shape
 
 
-# In[60]:
+# In[63]:
 
 
 train_sent
 
 
-# In[61]:
+# **Sentiment based rating adjustment**
+# 
+# Adjusted rating weight based on XGboost predicting rating**
+# with 0.6 from Original rating provided with 0.4 of Predicted rating. 
+# 
+# Automated sentiment analysis helps overcome human bias in reviewing feedback, ensuring more consistent and objective results when analyzing customer opinions.
+
+# In[64]:
 
 
 train_df = df_class.loc[idx_train].copy()
 test_df  = df_class.loc[idx_test].copy()
 
-#final_score = 0.6 * cf_score + 0.4 * sentiment
-
-
-#train_df["adjusted_rating"] = train_df["reviews_rating"].values * (0.8 + 0.2 * train_sent)
-#test_df["adjusted_rating"]  = test_df["reviews_rating"].values  * (0.8 + 0.2 * test_sent)
 
 train_df["adjusted_rating"] = (
     0.6 * train_df["reviews_rating"]
@@ -779,19 +791,19 @@ test_df["adjusted_rating"] =(
 )
 
 
-# In[62]:
+# In[65]:
 
 
 train_df.head(100)
 
 
-# In[63]:
+# In[66]:
 
 
 df_class.loc[7943]
 
 
-# In[64]:
+# In[67]:
 
 
 # Pivot the train ratings' dataset into matrix format in which columns are product names and the rows are user names.
@@ -810,27 +822,27 @@ df_pivot.head(10)
 # 
 # 
 
-# In[65]:
+# In[68]:
 
 
 # Copy the train dataset into dummy_train
 dummy_train = train_df.copy()
 
 
-# In[66]:
+# In[69]:
 
 
 dummy_train.head()
 
 
-# In[67]:
+# In[70]:
 
 
 # The products not rated by user is marked as 1 for prediction.
 dummy_train['adjusted_rating'] = dummy_train['adjusted_rating'].apply(lambda x: 0 if x>=1 else 1)
 
 
-# In[68]:
+# In[71]:
 
 
 # Pivot the train ratings' dataset into matrix format in which columns are product names and the rows are user names.
@@ -846,25 +858,25 @@ dummy_train.head(10)
 
 # ##### Using Similarity Matrix
 
-# In[69]:
+# In[72]:
 
 
 df_pivot.index.nunique()
 
 
-# In[70]:
+# In[73]:
 
 
 from sklearn.metrics.pairwise import pairwise_distances, cosine_similarity
 
 
-# In[71]:
+# In[74]:
 
 
 ####computing similarity matrix in df_pivot is crashing the system hence saving it in disk chunk wise and loading it
 
 
-# In[72]:
+# In[75]:
 
 
 #using cosine_similarity function to compute the distance.
@@ -876,7 +888,7 @@ print(user_correlation.shape)
 
 # #### **Prediction User-User**
 
-# In[73]:
+# In[76]:
 
 
 #filtering out the user_correlation that are negatively correlated
@@ -884,14 +896,14 @@ user_correlation[user_correlation<0]=0
 user_correlation
 
 
-# In[74]:
+# In[77]:
 
 
 user_predicted_ratings = np.dot(user_correlation, df_pivot.fillna(0))
 user_predicted_ratings
 
 
-# In[75]:
+# In[78]:
 
 
 #since we are interested in products that are not rated by the user, we multiply with dummy train to make it zero
@@ -903,21 +915,21 @@ user_final_rating.head()
 
 # ##### **Find 20 recommendation for the user**
 
-# In[76]:
+# In[79]:
 
 
 user_input = "01impala" 
 print(user_input)
 
 
-# In[77]:
+# In[80]:
 
 
 recommendations = user_final_rating.loc[user_input].sort_values(ascending=False)[0:20]
 recommendations
 
 
-# In[78]:
+# In[81]:
 
 
 #display the top 20 product id, name and similarity_score 
@@ -932,7 +944,7 @@ pd.merge(final_recommendations, train_df, on="id")[["id", "name", "similarity_sc
 # Saving this model since user-user recommendation showed better results than item-item based. 
 # 
 
-# In[79]:
+# In[82]:
 
 
 import pickle
@@ -946,7 +958,7 @@ with open("./pickle/user_final_rating.pkl", "wb") as f:
 # 
 # 
 
-# In[80]:
+# In[83]:
 
 
 # Find out the common users of test and train dataset.
@@ -954,13 +966,13 @@ common = test_df[test_df.reviews_username.isin(train_df.reviews_username)]
 common.shape
 
 
-# In[81]:
+# In[84]:
 
 
 common.head()
 
 
-# In[82]:
+# In[85]:
 
 
 # convert into the user-movie matrix.
@@ -968,7 +980,7 @@ common_user_based_matrix = pd.pivot_table(common,index='reviews_username', colum
 common_user_based_matrix.head()
 
 
-# In[83]:
+# In[86]:
 
 
 # Convert the user_correlation matrix into dataframe.
@@ -976,7 +988,7 @@ user_correlation_df = pd.DataFrame(user_correlation)
 user_correlation_df.head()
 
 
-# In[84]:
+# In[87]:
 
 
 user_correlation_df['reviews_username'] = df_pivot.index
@@ -984,7 +996,7 @@ user_correlation_df.set_index('reviews_username',inplace=True)
 user_correlation_df.head()
 
 
-# In[85]:
+# In[88]:
 
 
 list_name = common.reviews_username.tolist()
@@ -993,25 +1005,25 @@ user_correlation_df.columns = df_pivot.index.tolist()
 user_correlation_df_1 =  user_correlation_df[user_correlation_df.index.isin(list_name)]
 
 
-# In[86]:
+# In[89]:
 
 
 user_correlation_df_1.shape
 
 
-# In[87]:
+# In[90]:
 
 
 user_correlation_df_2 = user_correlation_df_1.T[user_correlation_df_1.T.index.isin(list_name)]
 
 
-# In[88]:
+# In[91]:
 
 
 user_correlation_df_3 = user_correlation_df_2.T
 
 
-# In[89]:
+# In[92]:
 
 
 user_correlation_df_3[user_correlation_df_3<0]=0
@@ -1026,7 +1038,7 @@ common_user_predicted_ratings
 
 
 
-# In[90]:
+# In[93]:
 
 
 dummy_test=common.copy()
@@ -1035,31 +1047,31 @@ dummy_test = pd.pivot_table(dummy_test,index='reviews_username', columns = 'id',
 common.head()
 
 
-# In[91]:
+# In[94]:
 
 
 dummy_test.shape
 
 
-# In[92]:
+# In[95]:
 
 
 common_user_based_matrix.head()
 
 
-# In[93]:
+# In[96]:
 
 
 dummy_test.head()
 
 
-# In[94]:
+# In[97]:
 
 
 common_user_predicted_ratings = np.multiply(common_user_predicted_ratings,dummy_test)
 
 
-# In[95]:
+# In[98]:
 
 
 common_user_predicted_ratings.head()
@@ -1067,7 +1079,7 @@ common_user_predicted_ratings.head()
 
 # #### **Calculate RMSE User-User based recommendation system**
 
-# In[96]:
+# In[99]:
 
 
 #calculate RMSE
@@ -1085,20 +1097,20 @@ y = (scaler.transform(X))
 print(y)
 
 
-# In[97]:
+# In[100]:
 
 
 common_ = pd.pivot_table(common,index='reviews_username', columns = 'id', values = 'adjusted_rating')
 
 
-# In[98]:
+# In[101]:
 
 
 # Finding total non-NaN value
 total_non_nan = np.count_nonzero(~np.isnan(y))
 
 
-# In[99]:
+# In[102]:
 
 
 rmse = (sum(sum((common_ - y )**2))/total_non_nan)**0.5
@@ -1107,7 +1119,7 @@ print(rmse)
 
 # #### **Item Item based recommendation**
 
-# In[100]:
+# In[103]:
 
 
 df_pivot = pd.pivot_table(train_df,
@@ -1119,20 +1131,20 @@ df_pivot = pd.pivot_table(train_df,
 df_pivot.head()
 
 
-# In[101]:
+# In[104]:
 
 
 mean = np.nanmean(df_pivot, axis=1)
 df_subtracted = (df_pivot.T-mean).T
 
 
-# In[102]:
+# In[105]:
 
 
 df_subtracted.head()
 
 
-# In[103]:
+# In[106]:
 
 
 # Item Similarity Matrix
@@ -1141,7 +1153,7 @@ item_correlation[np.isnan(item_correlation)] = 0
 print(item_correlation)
 
 
-# In[104]:
+# In[107]:
 
 
 item_correlation[item_correlation<0]=0
@@ -1150,7 +1162,7 @@ item_correlation
 
 # #### **Prediction - item-item**
 
-# In[105]:
+# In[108]:
 
 
 item_predicted_ratings = np.dot((df_pivot.fillna(0).T),item_correlation)
@@ -1159,7 +1171,7 @@ item_predicted_ratings
 
 # ##### **Filtering the rating only for the products not rated by the user for recommendation**
 
-# In[106]:
+# In[109]:
 
 
 item_final_rating = np.multiply(item_predicted_ratings,dummy_train)
@@ -1168,7 +1180,7 @@ item_final_rating.head()
 
 # ##### **Finding the top 20 recommendation for the user**
 
-# In[107]:
+# In[110]:
 
 
 # Take the user ID as input
@@ -1176,7 +1188,7 @@ user_input = '01impala'
 print(user_input)
 
 
-# In[108]:
+# In[111]:
 
 
 # Recommending the Top 5 products to the user.
@@ -1184,7 +1196,7 @@ item_recommendations = item_final_rating.loc[user_input].sort_values(ascending=F
 item_recommendations
 
 
-# In[109]:
+# In[112]:
 
 
 item_final_recommendations = pd.DataFrame({'product_id': item_recommendations.index, 'similarity_score' : item_recommendations})
@@ -1195,33 +1207,33 @@ pd.merge(item_final_recommendations, train_df, on="id")[["id", "name", "similari
 
 # #### **Evaluation - item-item**
 
-# In[110]:
+# In[113]:
 
 
 common =  test_df[test_df.id.isin(train_df.id)]
 common.shape
 
 
-# In[111]:
+# In[114]:
 
 
 common.head(4)
 
 
-# In[112]:
+# In[115]:
 
 
 common_item_based_matrix = common.pivot_table(index='id', columns='reviews_username', values='adjusted_rating')
 
 
-# In[113]:
+# In[116]:
 
 
 item_correlation_df = pd.DataFrame(item_correlation)
 item_correlation_df.head(1)
 
 
-# In[114]:
+# In[117]:
 
 
 item_correlation_df['id'] = df_subtracted.index
@@ -1229,13 +1241,13 @@ item_correlation_df.set_index('id',inplace=True)
 item_correlation_df.head()
 
 
-# In[115]:
+# In[118]:
 
 
 list_name = common.id.tolist()
 
 
-# In[116]:
+# In[119]:
 
 
 item_correlation_df.columns = df_subtracted.index.tolist()
@@ -1243,7 +1255,7 @@ item_correlation_df.columns = df_subtracted.index.tolist()
 item_correlation_df_1 =  item_correlation_df[item_correlation_df.index.isin(list_name)]
 
 
-# In[117]:
+# In[120]:
 
 
 item_correlation_df_2 = item_correlation_df_1.T[item_correlation_df_1.T.index.isin(list_name)]
@@ -1251,13 +1263,13 @@ item_correlation_df_2 = item_correlation_df_1.T[item_correlation_df_1.T.index.is
 item_correlation_df_3 = item_correlation_df_2.T
 
 
-# In[118]:
+# In[121]:
 
 
 df_subtracted
 
 
-# In[119]:
+# In[122]:
 
 
 item_correlation_df_3[item_correlation_df_3<0]=0
@@ -1266,7 +1278,7 @@ common_item_predicted_ratings = np.dot(item_correlation_df_3, common_item_based_
 common_item_predicted_ratings
 
 
-# In[120]:
+# In[123]:
 
 
 dummy_test = common.copy()
@@ -1275,13 +1287,13 @@ dummy_test = pd.pivot_table(dummy_test, index='id', columns='reviews_username', 
 common_item_predicted_ratings = np.multiply(common_item_predicted_ratings,dummy_test)
 
 
-# In[121]:
+# In[124]:
 
 
 common_ = pd.pivot_table(common,index='id', columns='reviews_username', values='adjusted_rating')
 
 
-# In[122]:
+# In[125]:
 
 
 from sklearn.preprocessing import MinMaxScaler
@@ -1297,7 +1309,7 @@ y = (scaler.transform(X))
 print(y)
 
 
-# In[123]:
+# In[126]:
 
 
 # Finding total non-NaN value
@@ -1306,7 +1318,7 @@ total_non_nan = np.count_nonzero(~np.isnan(y))
 
 # ##### **Computing RMSE for ITEM ITEM based recommendation system**
 
-# In[124]:
+# In[127]:
 
 
 rmse = (sum(sum((common_ - y )**2))/total_non_nan)**0.5
@@ -1319,7 +1331,7 @@ print(rmse)
 # 
 # Get the top 20 product recommendations using the recommender system and get the top 5 using the sentiment ML model.. the similar method would be used in model.py
 
-# In[125]:
+# In[128]:
 
 
 def get_sentiment_recommendations(user):
@@ -1341,28 +1353,28 @@ def get_sentiment_recommendations(user):
         print(f"User name {user} doesn't exist")
 
 
-# In[126]:
+# In[129]:
 
 
 #testing the above fuction using one of the users that's trained on.
 get_sentiment_recommendations("01impala")
 
 
-# In[127]:
+# In[130]:
 
 
 #get the top 5
 get_sentiment_recommendations("joshua")[:5]
 
 
-# In[128]:
+# In[131]:
 
 
 #testing the above fuction on the user that doesn't exists or a new user
 get_sentiment_recommendations("mamathak")
 
 
-# In[129]:
+# In[132]:
 
 
 X_sample = tfidf_vectorizer.transform(["Awesome product, will recommend"])
@@ -1370,7 +1382,7 @@ y_pred_sample = XG.predict(X_sample)
 y_pred_sample
 
 
-# In[130]:
+# In[133]:
 
 
 X_sample = tfidf_vectorizer.transform(["worst product, quality is poor"])
@@ -1378,14 +1390,14 @@ y_pred_sample = XG.predict(X_sample)
 y_pred_sample
 
 
-# In[131]:
+# In[134]:
 
 
 with open("./pickle/cleaned_data.pkl", "wb") as f:
     pickle.dump(df_class, f)
 
 
-# In[132]:
+# In[135]:
 
 
 import pickle
